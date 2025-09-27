@@ -1,5 +1,5 @@
-from agenda.dao import ItemDAO
-from agenda.model import Item
+from dao import ItemDAO
+from model import Item
 
 class ItemController:
     def __init__(self):

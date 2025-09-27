@@ -1,30 +1,21 @@
 import streamlit as st
-from agenda.controller import ItemController
-
-st.set_page_config(page_title="Cadastro de Itens", layout="centered")
+from controller import ItemController
 
 controller = ItemController()
-
-st.title("📦 Cadastro de Itens")
-
-# Formulário de cadastro
+st.title("Cadastro de Itens")
 st.subheader("Cadastrar novo item")
 descricao = st.text_input("Descrição do item")
-quantidade = st.number_input("Quantidade", min_value=0, step=1)
+quantidade = st.number_input("Quantidade", min_value=0)
 
-if st.button("Adicionar Item"):
-    try:
-        controller.criarItem(descricao, quantidade)
-        st.success("Item adicionado com sucesso!")
-    except ValueError as e:
-        st.error(str(e))
+if st.button("Adicionar item"):
+    controller.criarItem(descricao, quantidade)
+    st.success("Item adicionado com sucesso!")
 
-# Listagem de itens
-st.subheader("Itens cadastrados")
+st.subheader("Lista de itens")
 itens = controller.obterTodosOsItens()
 
 if itens:
     for item in itens:
-        st.write(f"**ID:** {item.id} | **Descrição:** {item.descricao} | **Quantidade:** {item.quantidade}")
+        st.write(f"{item.get_id()} - **Descrição:** {item.get_descricao()} | **Quantidade:** {item.get_quantidade()}")
 else:
     st.info("Nenhum item cadastrado ainda.")

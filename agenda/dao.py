@@ -1,38 +1,44 @@
 import sqlite3
-from agenda.model import Item
+from model import Item
 
 class ItemDAO:
-    def __init__(self, db_name="database.db"):
-        self.db_name = db_name
+    _NOME_ARQUIVO_DB = 'inventario.db'
+
+    def __init__(self):
         self._criar_tabela()
 
+    def _conectar(self):
+        return sqlite3.connect(self._NOME_ARQUIVO_DB)
+
     def _criar_tabela(self):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS itens (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                descricao TEXT NOT NULL,
-                quantidade INTEGER NOT NULL
-            )
-        """)
-        conn.commit()
-        conn.close()
+        with self._conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS itens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    descricao TEXT NOT NULL,
+                    quantidade INTEGER NOT NULL
+                );
+            """)
+            conn.commit()
 
     def adicionar(self, item: Item):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO itens (descricao, quantidade) VALUES (?, ?)", 
-                       (item.descricao, item.quantidade))
-        conn.commit()
-        conn.close()
+        with self._conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO itens (descricao, quantidade) VALUES (?, ?)",
+                (item.get_descricao(), item.get_quantidade())
+            )
+            conn.commit()
 
-    def listarTodos(self) -> list:
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, descricao, quantidade FROM itens")
-        rows = cursor.fetchall()
-        conn.close()
-
-        itens = [Item(id=row[0], descricao=row[1], quantidade=row[2]) for row in rows]
-        return itens
+    def listarTodos(self) -> list[Item]:
+        with self._conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, descricao, quantidade FROM itens")
+            resultados = cursor.fetchall()
+            
+            itens = []
+            for row in resultados:
+                novo_item = Item(id=row[0], descricao=row[1], quantidade=row[2])
+                itens.append(novo_item)
+            return itens
